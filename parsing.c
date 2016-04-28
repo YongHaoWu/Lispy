@@ -36,8 +36,8 @@ int main(int argc, char** argv) {
     /* Define them with the following Language */
     mpca_lang(MPCA_LANG_DEFAULT,
             "                                                     \
-            number   : /-?[0-9]+/ ;                             \
-            operator : '+' | '-' | '*' | '/' ;                  \
+            number   : /-?[0-9]+/ '.' /[0-9]+/ | /-?[0-9]+/ ;  \
+            operator : '+' | '-' | '*' | '/' | '%' ;                  \
             expr     : <number> | '(' <operator> <expr>+ ')' ;  \
             lispy    : /^/ <operator> <expr>+ /$/ ;             \
             ",
@@ -56,8 +56,18 @@ int main(int argc, char** argv) {
         add_history(input);
 
         /* Echo input back to user */
-        printf("Your input is :  %s\n", input);
 
+        /* Attempt to Parse the user Input */
+        mpc_result_t r;
+        if (mpc_parse("<stdin>", input, Lispy, &r)) {
+            /* On Success Print the AST */
+            mpc_ast_print(r.output);
+            mpc_ast_delete(r.output);
+        } else {
+            /* Otherwise Print the Error */
+            mpc_err_print(r.error);
+            mpc_err_delete(r.error);
+        }
         /* Free retrieved input */
         free(input);
 
